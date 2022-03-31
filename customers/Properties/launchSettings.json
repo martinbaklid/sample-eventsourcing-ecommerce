@@ -9,7 +9,7 @@
     }
   },
   "profiles": {
-    "collection": {
+    "customer": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,

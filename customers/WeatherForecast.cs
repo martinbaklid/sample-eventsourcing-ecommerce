@@ -1,4 +1,4 @@
-namespace collection;
+namespace Customer;
 
 public class WeatherForecast
 {
