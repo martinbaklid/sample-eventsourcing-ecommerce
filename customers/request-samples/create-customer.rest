@@ -1,0 +1,6 @@
+POST https://localhost:7254/customers
+Content-Type: application/json
+
+{
+    "name": "Ola Normann"
+}
