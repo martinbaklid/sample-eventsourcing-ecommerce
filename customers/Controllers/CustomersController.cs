@@ -16,21 +16,35 @@ public class CustomersController : ControllerBase
         _store = store;
     }
 
-    [HttpPost(Name = "CreateCustomer")]
-    public async Task<Customer> Post(Customer customer)
+    [HttpPost]
+    public async Task<ActionResult<Customer>> Post(CreateCustomerRequest customer)
     {
-        var session = _store.LightweightSession();
-        if (customer.Id == Guid.Empty) {
-            customer.Id = Guid.NewGuid();
-        }
-        session.Insert<Customer>(customer);
+        using var session = _store.LightweightSession();
+        var id = Guid.NewGuid();
+        var customerCreatedEvent = new CustomerCreated(id, customer.Name);
+        session.Events.StartStream<Customer>(id, customerCreatedEvent);
         await session.SaveChangesAsync();
-        return customer;
+        var createdCustomer = await session.Events.AggregateStreamAsync<Customer>(id);
+        return CreatedAtAction(nameof(GetById), new { id = customerCreatedEvent.Id }, createdCustomer);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<Customer?> GetById(Guid id)
+    {
+        using var session = _store.LightweightSession();
+        return await session.Events.AggregateStreamAsync<Customer>(id);
     }
 }
+public record CreateCustomerRequest(string Name);
 
-public class Customer
-{
-    public Guid Id { get; set; }
-    public string? Name { get; set; }
+public record CustomerCreated(Guid Id, string Name);
+
+
+public class Customer {
+    public Guid Id { get; private set; }
+    public string Name { get; private set; }
+    public void Apply(CustomerCreated @event) {
+        Id = @event.Id;
+        Name = @event.Name;
+    }
 }
