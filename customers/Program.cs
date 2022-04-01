@@ -1,5 +1,6 @@
 using Marten;
 using Weasel.Core;
+using Oakton;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,4 +39,4 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+app.RunOaktonCommands(args);
